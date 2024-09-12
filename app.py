@@ -1,9 +1,8 @@
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import ttk, messagebox
 import pandas as pd
 import pickle
-from datetime import datetime, timedelta
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from ttkbootstrap import Style
 
 # Load the model from the pickle file
 with open('booking_cancellations_classifier.pkl', 'rb') as model_file:
@@ -33,12 +32,12 @@ def predict():
         market_segment = market_segment_var.get()
         distribution_channel = distribution_channel_var.get()
         reserved_room_type = reserved_room_type_var.get()
-        deposit_type = deposit_type_var.get()  # Assuming there's a variable for 'DepositType'
-        customer_type = customer_type_var.get()  # Assuming there's a variable for 'CustomerType'
-        agent = int(entry_agent.get())  # Assuming 'Agent' is provided as input
-        company = int(entry_company.get())  # Assuming 'Company' is provided as input
+        deposit_type = deposit_type_var.get()
+        customer_type = customer_type_var.get()
+        agent = int(entry_agent.get())
+        company = int(entry_company.get())
         
-        # Create a dictionary of features, corresponding to column names expected by the model
+        # Create a dictionary of features
         features_dict = {
             'LeadTime': [lead_time],
             'ArrivalDateYear': [arrival_year],
@@ -69,7 +68,7 @@ def predict():
             'BookingChanges': [booking_changes]
         }
         
-        # Convert the features to a DataFrame (this matches the expected format for the model)
+        # Convert the features to a DataFrame
         features_df = pd.DataFrame(features_dict)
 
         # Perform prediction using the model
@@ -79,185 +78,127 @@ def predict():
         result = "Cancelled" if prediction == 1 else "Not Cancelled"
         messagebox.showinfo("Prediction", f"The predicted class is: {result}")
     except ValueError as ve:
-        # Catch ValueError specifically and print detailed information
         print(f"ValueError: {ve}")
         messagebox.showerror("Error", f"ValueError: {ve}")
     except Exception as e:
-        # Catch any other exceptions and show detailed error message
         print(f"Exception: {e}")
         messagebox.showerror("Error", f"An error occurred: {e}")
 
-
-# Initialize the Tkinter window
+# Initialize the Tkinter window with ttkbootstrap style
 root = tk.Tk()
+style = Style(theme='flatly')
 root.title("🏨 Hotel Booking Cancellations Classifier 🏨")
+root.geometry("800x600")
+
+# Create a main frame
+main_frame = ttk.Frame(root)
+main_frame.pack(fill=tk.BOTH, expand=1)
+
+# Create a canvas
+canvas = tk.Canvas(main_frame)
+canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=1)
+
+# Add a scrollbar to the canvas
+scrollbar = ttk.Scrollbar(main_frame, orient=tk.VERTICAL, command=canvas.yview)
+scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+# Configure the canvas
+canvas.configure(yscrollcommand=scrollbar.set)
+canvas.bind('<Configure>', lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+
+# Create another frame inside the canvas
+content_frame = ttk.Frame(canvas)
+
+# Add that frame to a window in the canvas
+canvas.create_window((400, 0), window=content_frame, anchor="n")
+
+# Make the content frame expandable
+content_frame.columnconfigure(0, weight=1)
+
+# Bind mousewheel to scroll
+def _on_mousewheel(event):
+    canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+
+canvas.bind_all("<MouseWheel>", _on_mousewheel)
 
 # Create a welcome message and explain the purpose of the app
-welcome_message = tk.Label(root, text="Welcome to the Hotel Booking Cancellations Classifier!")
-welcome_message.grid(row=0, column=0, columnspan=2)
+welcome_message = ttk.Label(content_frame, text="Welcome to the Hotel Booking Cancellations Classifier!", font=("Helvetica", 16, "bold"))
+welcome_message.grid(row=0, column=0, pady=(20, 10))
 
-explanation_message = tk.Label(root, text="Please enter the following information to predict whether a booking will be cancelled:")
-explanation_message.grid(row=1, column=0, columnspan=2)
+explanation_message = ttk.Label(content_frame, text="Please enter the following information to predict whether a booking will be cancelled:", wraplength=700)
+explanation_message.grid(row=1, column=0, pady=(0, 20))
+
+# Create a function to add input fields with consistent styling and default values
+def add_input_field(parent, row, text, default=""):
+    frame = ttk.Frame(parent)
+    frame.grid(row=row, column=0, sticky="ew", pady=5)
+    frame.columnconfigure(1, weight=1)
+    
+    label = ttk.Label(frame, text=text, width=25, anchor="e")
+    label.grid(row=0, column=0, padx=(0, 10))
+    
+    entry = ttk.Entry(frame)
+    entry.grid(row=0, column=1, sticky="ew")
+    entry.insert(0, default)
+    
+    return entry
 
 # Create input fields for user to enter the features
-label_lead_time = tk.Label(root, text="Lead Time:")
-label_lead_time.grid(row=2, column=0)
-entry_lead_time = tk.Entry(root)
-entry_lead_time.grid(row=2, column=1)
-entry_lead_time.insert(0, "0")  # Default value
-
-label_arrival_year = tk.Label(root, text="Arrival Year:")
-label_arrival_year.grid(row=3, column=0)
-entry_arrival_year = tk.Entry(root)
-entry_arrival_year.grid(row=3, column=1)
-entry_arrival_year.insert(0, "2017")  # Default value
-
-label_arrival_month = tk.Label(root, text="Arrival Month (1-12):")
-label_arrival_month.grid(row=4, column=0)
-entry_arrival_month = tk.Entry(root)
-entry_arrival_month.grid(row=4, column=1)
-entry_arrival_month.insert(0, "1")  # Default value
-
-label_arrival_day_of_month = tk.Label(root, text="Arrival Day of Month:")  # Add Day of Month label and entry
-label_arrival_day_of_month.grid(row=5, column=0)
-entry_arrival_day_of_month = tk.Entry(root)
-entry_arrival_day_of_month.grid(row=5, column=1)
-entry_arrival_day_of_month.insert(0, "1")  # Default value
-
-label_stays_weekend_nights = tk.Label(root, text="Stays in Weekend Nights:")
-label_stays_weekend_nights.grid(row=6, column=0)
-entry_stays_weekend_nights = tk.Entry(root)
-entry_stays_weekend_nights.grid(row=6, column=1)
-entry_stays_weekend_nights.insert(0, "1")  # Default value
-
-label_stays_week_nights = tk.Label(root, text="Stays in Week Nights:")
-label_stays_week_nights.grid(row=7, column=0)
-entry_stays_week_nights = tk.Entry(root)
-entry_stays_week_nights.grid(row=7, column=1)
-entry_stays_week_nights.insert(0, "2")  # Default value
-
-label_adults = tk.Label(root, text="Number of Adults:")
-label_adults.grid(row=8, column=0)
-entry_adults = tk.Entry(root)
-entry_adults.grid(row=8, column=1)
-entry_adults.insert(0, "1")  # Default value
-
-label_children = tk.Label(root, text="Number of Children:")
-label_children.grid(row=9, column=0)
-entry_children = tk.Entry(root)
-entry_children.grid(row=9, column=1)
-entry_children.insert(0, "0")  # Default value
-
-label_previous_cancellations = tk.Label(root, text="Previous Cancellations:")
-label_previous_cancellations.grid(row=11, column=0)
-entry_previous_cancellations = tk.Entry(root)
-entry_previous_cancellations.grid(row=11, column=1)
-entry_previous_cancellations.insert(0, "0")  # Default value
-
-label_is_repeated_guest = tk.Label(root, text="Is Repeated Guest (1=Yes, 0=No):")
-label_is_repeated_guest.grid(row=12, column=0)
-entry_is_repeated_guest = tk.Entry(root)
-entry_is_repeated_guest.grid(row=12, column=1)
-entry_is_repeated_guest.insert(0, "0")  # Default value
-
-label_adr = tk.Label(root, text="Average Daily Rate:")
-label_adr.grid(row=13, column=0)
-entry_adr = tk.Entry(root)
-entry_adr.grid(row=13, column=1)
-entry_adr.insert(0, "100")  # Default value
+entry_lead_time = add_input_field(content_frame, 2, "Lead Time:", "0")
+entry_arrival_year = add_input_field(content_frame, 3, "Arrival Year:", "2017")
+entry_arrival_month = add_input_field(content_frame, 4, "Arrival Month (1-12):", "1")
+entry_arrival_day_of_month = add_input_field(content_frame, 5, "Arrival Day of Month:", "1")
+entry_stays_weekend_nights = add_input_field(content_frame, 6, "Stays in Weekend Nights:", "1")
+entry_stays_week_nights = add_input_field(content_frame, 7, "Stays in Week Nights:", "2")
+entry_adults = add_input_field(content_frame, 8, "Number of Adults:", "1")
+entry_children = add_input_field(content_frame, 9, "Number of Children:", "0")
+entry_previous_cancellations = add_input_field(content_frame, 10, "Previous Cancellations:", "0")
+entry_is_repeated_guest = add_input_field(content_frame, 11, "Is Repeated Guest (1=Yes, 0=No):", "0")
+entry_adr = add_input_field(content_frame, 12, "Average Daily Rate:", "100")
 
 # Categorical feature dropdowns
-label_meal = tk.Label(root, text="Meal:")
-label_meal.grid(row=14, column=0)
-meal_var = tk.StringVar(root)
-meal_var.set("BB")  # Default value
-meal_options = ["BB", "FB", "HB", "SC", "Undefined"]  # Add actual options
-meal_menu = tk.OptionMenu(root, meal_var, *meal_options)
-meal_menu.grid(row=14, column=1)
+def add_dropdown(parent, row, text, variable, options):
+    frame = ttk.Frame(parent)
+    frame.grid(row=row, column=0, sticky="ew", pady=5)
+    frame.columnconfigure(1, weight=1)
+    
+    label = ttk.Label(frame, text=text, width=25, anchor="e")
+    label.grid(row=0, column=0, padx=(0, 10))
+    
+    dropdown = ttk.Combobox(frame, textvariable=variable, values=options, state="readonly")
+    dropdown.grid(row=0, column=1, sticky="ew")
+    dropdown.set(options[0])
+    
+    return dropdown
 
-label_market_segment = tk.Label(root, text="Market Segment:")
-label_market_segment.grid(row=15, column=0)
-market_segment_var = tk.StringVar(root)
-market_segment_var.set("Online TA")  # Default value
-market_segment_options = ["Direct", "Corporate", "Online TA", "Offline TA/TO", "Complementary", "Groups", "Undefined"]
-market_segment_menu = tk.OptionMenu(root, market_segment_var, *market_segment_options)
-market_segment_menu.grid(row=15, column=1)
+meal_var = tk.StringVar()
+add_dropdown(content_frame, 13, "Meal:", meal_var, ["BB", "FB", "HB", "SC", "Undefined"])
 
-label_distribution_channel = tk.Label(root, text="Distribution Channel:")
-label_distribution_channel.grid(row=16, column=0)
-distribution_channel_var = tk.StringVar(root)
-distribution_channel_var.set("TA/TO")  # Default value
-distribution_channel_options = ["TA/TO", "Corporate", "Direct", "GDS", "Undefined"]
-distribution_channel_menu = tk.OptionMenu(root, distribution_channel_var, *distribution_channel_options)
-distribution_channel_menu.grid(row=16, column=1)
+market_segment_var = tk.StringVar()
+add_dropdown(content_frame, 14, "Market Segment:", market_segment_var, ["Direct", "Corporate", "Online TA", "Offline TA/TO", "Complementary", "Groups", "Undefined"])
 
-label_reserved_room_type = tk.Label(root, text="Reserved Room Type:")
-label_reserved_room_type.grid(row=17, column=0)
-reserved_room_type_var = tk.StringVar(root)
-reserved_room_type_var.set("A")  # Default value
-reserved_room_type_options = ["A", "B", "C", "D", "E"]  # Actual room types
-reserved_room_type_menu = tk.OptionMenu(root, reserved_room_type_var, *reserved_room_type_options)
-reserved_room_type_menu.grid(row=17, column=1)
+distribution_channel_var = tk.StringVar()
+add_dropdown(content_frame, 15, "Distribution Channel:", distribution_channel_var, ["TA/TO", "Corporate", "Direct", "GDS", "Undefined"])
 
-label_deposit_type = tk.Label(root, text="Deposit Type:")
-label_deposit_type.grid(row=18, column=0)
-deposit_type_var = tk.StringVar(root)
-deposit_type_var.set("No Deposit")  # Default value
-deposit_type_options = ["No Deposit", "Non Refund", "Refundable"]
-deposit_type_menu = tk.OptionMenu(root, deposit_type_var, *deposit_type_options)
-deposit_type_menu.grid(row=18, column=1)
+reserved_room_type_var = tk.StringVar()
+add_dropdown(content_frame, 16, "Reserved Room Type:", reserved_room_type_var, ["A", "B", "C", "D", "E"])
 
-label_customer_type = tk.Label(root, text="Customer Type:")
-label_customer_type.grid(row=19, column=0)
-customer_type_var = tk.StringVar(root)
-customer_type_var.set("Transient")  # Default value
-customer_type_options = ["Transient", "Contract", "Transient-Party", "Group"]
-customer_type_menu = tk.OptionMenu(root, customer_type_var, *customer_type_options)
-customer_type_menu.grid(row=19, column=1)
+deposit_type_var = tk.StringVar()
+add_dropdown(content_frame, 17, "Deposit Type:", deposit_type_var, ["No Deposit", "Non Refund", "Refundable"])
 
-label_agent = tk.Label(root, text="Agent:")
-label_agent.grid(row=20, column=0)
-entry_agent = tk.Entry(root)
-entry_agent.grid(row=20, column=1)
-entry_agent.insert(0, "9")  # Default value
+customer_type_var = tk.StringVar()
+add_dropdown(content_frame, 18, "Customer Type:", customer_type_var, ["Transient", "Contract", "Transient-Party", "Group"])
 
-label_company = tk.Label(root, text="Company:")
-label_company.grid(row=21, column=0)
-entry_company = tk.Entry(root)
-entry_company.grid(row=21, column=1)
-entry_company.insert(0, "40")  # Default value
+entry_agent = add_input_field(content_frame, 19, "Agent:", "9")
+entry_company = add_input_field(content_frame, 20, "Company:", "40")
+entry_previous_bookings_not_canceled = add_input_field(content_frame, 21, "Previous Bookings Not Canceled:", "0")
+entry_total_of_special_requests = add_input_field(content_frame, 22, "Total of Special Requests:", "0")
+entry_days_in_waiting_list = add_input_field(content_frame, 23, "Days in Waiting List:", "0")
+entry_booking_changes = add_input_field(content_frame, 24, "Booking Changes:", "0")
 
-# add {'PreviousBookingsNotCanceled', 'TotalOfSpecialRequests', 'DaysInWaitingList', 'BookingChanges'}
-
-previous_bookings_not_canceled = tk.Label(root, text="Previous Bookings Not Canceled:")
-previous_bookings_not_canceled.grid(row=22, column=0)
-entry_previous_bookings_not_canceled = tk.Entry(root)
-entry_previous_bookings_not_canceled.grid(row=22, column=1)
-entry_previous_bookings_not_canceled.insert(0, "0")  # Default value
-
-total_of_special_requests = tk.Label(root, text="Total of Special Requests:")
-total_of_special_requests.grid(row=23, column=0)
-entry_total_of_special_requests = tk.Entry(root)
-entry_total_of_special_requests.grid(row=23, column=1)
-entry_total_of_special_requests.insert(0, "0")  # Default value
-
-days_in_waiting_list = tk.Label(root, text="Days in Waiting List:")
-days_in_waiting_list.grid(row=24, column=0)
-entry_days_in_waiting_list = tk.Entry(root)
-entry_days_in_waiting_list.grid(row=24, column=1)
-entry_days_in_waiting_list.insert(0, "0")  # Default value
-
-booking_changes = tk.Label(root, text="Booking Changes:")
-booking_changes.grid(row=25, column=0)
-entry_booking_changes = tk.Entry(root)
-entry_booking_changes.grid(row=25, column=1)
-entry_booking_changes.insert(0, "0")  # Default value
-
-
-# Create a predict button
-predict_button = tk.Button(root, text="Predict", command=predict)
-predict_button.grid(row=26, column=0, columnspan=2)
+# Create a predict button with custom styling
+predict_button = ttk.Button(content_frame, text="Predict", command=predict, style="Accent.TButton")
+predict_button.grid(row=25, column=0, pady=20)
 
 # Run the Tkinter event loop
 root.mainloop()
-
