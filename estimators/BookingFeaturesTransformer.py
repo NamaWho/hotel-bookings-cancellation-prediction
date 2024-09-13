@@ -14,9 +14,10 @@ class BookingFeaturesTransformer(BaseEstimator, TransformerMixin):
         X = X.copy()
 
         # Create 'LiveTime' feature
-        X['LiveTime'] = X.apply(lambda row: self.calculate_livetime(X, row), axis=1)
+        # X['LiveTime'] = X.apply(lambda row: self.calculate_livetime(X, row), axis=1)
+        X['LiveTime'] = X['LeadTime']
 
-         # Calculate the 75th percentile of ADR for each group
+        # Calculate the 75th percentile of ADR for each group
         X['ThirdQuartileADR'] = X.groupby(['DistributionChannel', 'ReservedRoomType', 'ArrivalDateYear'])['ADR'].transform(lambda x: x.quantile(0.75))
 
         # Calculate ADRThirdQuartileDeviation
@@ -45,7 +46,11 @@ class BookingFeaturesTransformer(BaseEstimator, TransformerMixin):
             # 'C' booking type (current bookings)
             processing_date = arrival_date - timedelta(weeks=2)
             if (processing_date - booking_date).days < 0:
-                return 0
+                processing_date = arrival_date - timedelta(weeks=1)
+                if (processing_date - booking_date).days < 0:
+                    return 0
+                else:
+                    return (processing_date - booking_date).days
             return (processing_date - booking_date).days
         else:
             if row['ReservationStatus'] == 'Check-Out':  # "A" type (effective bookings)
