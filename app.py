@@ -15,6 +15,7 @@ def predict():
         arrival_year = int(entry_arrival_year.get())
         arrival_month = int(entry_arrival_month.get())
         arrival_day_of_month = int(entry_arrival_day_of_month.get())
+        arrival_week_number = int(entry_arrival_week_number.get())
         stays_weekend_nights = int(entry_stays_weekend_nights.get())
         stays_week_nights = int(entry_stays_week_nights.get())
         adults = int(entry_adults.get())
@@ -36,6 +37,8 @@ def predict():
         customer_type = customer_type_var.get()
         agent = int(entry_agent.get())
         company = int(entry_company.get())
+
+        hotel = hotel_type_var.get()
         
         # Create a dictionary of features
         features_dict = {
@@ -43,6 +46,7 @@ def predict():
             'ArrivalDateYear': [arrival_year],
             'ArrivalDateMonth': [arrival_month],
             'ArrivalDateDayOfMonth': [arrival_day_of_month],
+            'ArrivalDateWeekNumber': [arrival_week_number],
             'StaysInWeekendNights': [stays_weekend_nights],
             'StaysInWeekNights': [stays_week_nights],
             'Adults': [adults],
@@ -58,14 +62,12 @@ def predict():
             'CustomerType': [customer_type],
             'Agent': [agent],
             'Company': [company],
-            'ReservationStatus': [''],
-            'ReservationStatusDate': [''],
             'Babies': [0], 
-            'Hotel': [''],
+            'Hotel': [hotel],
             'PreviousBookingsNotCanceled': [previous_bookings_not_canceled],
             'TotalOfSpecialRequests': [total_of_special_requests],
             'DaysInWaitingList': [days_in_waiting_list],
-            'BookingChanges': [booking_changes]
+            'BookingChanges': [booking_changes],
         }
         
         # Convert the features to a DataFrame
@@ -148,13 +150,14 @@ entry_lead_time = add_input_field(content_frame, 2, "Lead Time:", "0")
 entry_arrival_year = add_input_field(content_frame, 3, "Arrival Year:", "2017")
 entry_arrival_month = add_input_field(content_frame, 4, "Arrival Month (1-12):", "1")
 entry_arrival_day_of_month = add_input_field(content_frame, 5, "Arrival Day of Month:", "1")
-entry_stays_weekend_nights = add_input_field(content_frame, 6, "Stays in Weekend Nights:", "1")
-entry_stays_week_nights = add_input_field(content_frame, 7, "Stays in Week Nights:", "2")
-entry_adults = add_input_field(content_frame, 8, "Number of Adults:", "1")
-entry_children = add_input_field(content_frame, 9, "Number of Children:", "0")
-entry_previous_cancellations = add_input_field(content_frame, 10, "Previous Cancellations:", "0")
-entry_is_repeated_guest = add_input_field(content_frame, 11, "Is Repeated Guest (1=Yes, 0=No):", "0")
-entry_adr = add_input_field(content_frame, 12, "Average Daily Rate:", "100")
+entry_arrival_week_number = add_input_field(content_frame, 6, "Arrival Week Number:", "1")
+entry_stays_weekend_nights = add_input_field(content_frame, 7, "Stays in Weekend Nights:", "1")
+entry_stays_week_nights = add_input_field(content_frame, 8, "Stays in Week Nights:", "2")
+entry_adults = add_input_field(content_frame, 9, "Number of Adults:", "1")
+entry_children = add_input_field(content_frame, 10, "Number of Children:", "0")
+entry_previous_cancellations = add_input_field(content_frame, 11, "Previous Cancellations:", "0")
+entry_is_repeated_guest = add_input_field(content_frame, 12, "Is Repeated Guest (1=Yes, 0=No):", "0")
+entry_adr = add_input_field(content_frame, 13, "Average Daily Rate:", "100")
 
 # Categorical feature dropdowns
 def add_dropdown(parent, row, text, variable, options):
@@ -172,33 +175,36 @@ def add_dropdown(parent, row, text, variable, options):
     return dropdown
 
 meal_var = tk.StringVar()
-add_dropdown(content_frame, 13, "Meal:", meal_var, ["BB", "FB", "HB", "SC", "Undefined"])
+add_dropdown(content_frame, 14, "Meal:", meal_var, ["BB", "FB", "HB", "SC", "Undefined"])
 
 market_segment_var = tk.StringVar()
-add_dropdown(content_frame, 14, "Market Segment:", market_segment_var, ["Direct", "Corporate", "Online TA", "Offline TA/TO", "Complementary", "Groups", "Undefined"])
+add_dropdown(content_frame, 15, "Market Segment:", market_segment_var, ["Direct", "Corporate", "Online TA", "Offline TA/TO", "Complementary", "Groups", "Undefined"])
 
 distribution_channel_var = tk.StringVar()
-add_dropdown(content_frame, 15, "Distribution Channel:", distribution_channel_var, ["TA/TO", "Corporate", "Direct", "GDS", "Undefined"])
+add_dropdown(content_frame, 16, "Distribution Channel:", distribution_channel_var, ["TA/TO", "Corporate", "Direct", "GDS", "Undefined"])
 
 reserved_room_type_var = tk.StringVar()
-add_dropdown(content_frame, 16, "Reserved Room Type:", reserved_room_type_var, ["A", "B", "C", "D", "E"])
+add_dropdown(content_frame, 17, "Reserved Room Type:", reserved_room_type_var, ["A", "B", "C", "D", "E"])
 
 deposit_type_var = tk.StringVar()
-add_dropdown(content_frame, 17, "Deposit Type:", deposit_type_var, ["No Deposit", "Non Refund", "Refundable"])
+add_dropdown(content_frame, 18, "Deposit Type:", deposit_type_var, ["No Deposit", "Non Refund", "Refundable"])
 
 customer_type_var = tk.StringVar()
-add_dropdown(content_frame, 18, "Customer Type:", customer_type_var, ["Transient", "Contract", "Transient-Party", "Group"])
+add_dropdown(content_frame, 19, "Customer Type:", customer_type_var, ["Transient", "Contract", "Transient-Party", "Group"])
 
-entry_agent = add_input_field(content_frame, 19, "Agent:", "9")
-entry_company = add_input_field(content_frame, 20, "Company:", "40")
-entry_previous_bookings_not_canceled = add_input_field(content_frame, 21, "Previous Bookings Not Canceled:", "0")
-entry_total_of_special_requests = add_input_field(content_frame, 22, "Total of Special Requests:", "0")
-entry_days_in_waiting_list = add_input_field(content_frame, 23, "Days in Waiting List:", "0")
-entry_booking_changes = add_input_field(content_frame, 24, "Booking Changes:", "0")
+entry_agent = add_input_field(content_frame, 20, "Agent:", "9")
+entry_company = add_input_field(content_frame, 21, "Company:", "40")
+entry_previous_bookings_not_canceled = add_input_field(content_frame, 22, "Previous Bookings Not Canceled:", "0")
+entry_total_of_special_requests = add_input_field(content_frame, 23, "Total of Special Requests:", "0")
+entry_days_in_waiting_list = add_input_field(content_frame, 24, "Days in Waiting List:", "0")
+entry_booking_changes = add_input_field(content_frame, 25, "Booking Changes:", "0")
+
+hotel_type_var = tk.StringVar()
+add_dropdown(content_frame, 26, "Hotel Type:", hotel_type_var, ["H1", "H2"])
 
 # Create a predict button with custom styling
 predict_button = ttk.Button(content_frame, text="Predict", command=predict, style="Accent.TButton")
-predict_button.grid(row=25, column=0, pady=20)
+predict_button.grid(row=27, column=0, pady=20)
 
 # Run the Tkinter event loop
 root.mainloop()

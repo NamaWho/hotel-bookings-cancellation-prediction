@@ -10,7 +10,7 @@ class BookingFeaturesTransformer(BaseEstimator, TransformerMixin):
         X = X.copy()
         
         # Calculate the 75th percentile of ADR for each group using only the training data
-        self.third_quartile_adr_ = X.groupby(['DistributionChannel', 'ReservedRoomType', 'ArrivalDateYear'])['ADR'].quantile(0.75).reset_index()
+        self.third_quartile_adr_ = X.groupby(['DistributionChannel', 'ReservedRoomType', 'ArrivalDateYear', 'ArrivalDateWeekNumber'])['ADR'].quantile(0.75).reset_index()
         self.third_quartile_adr_.rename(columns={'ADR': 'ThirdQuartileADR'}, inplace=True)
         
         return self
@@ -19,7 +19,7 @@ class BookingFeaturesTransformer(BaseEstimator, TransformerMixin):
         X = X.copy()
 
         # Merge the pre-calculated 75th percentile ADR values with the dataset
-        X = X.merge(self.third_quartile_adr_, on=['DistributionChannel', 'ReservedRoomType', 'ArrivalDateYear'], how='left')
+        X = X.merge(self.third_quartile_adr_, on=['DistributionChannel', 'ReservedRoomType', 'ArrivalDateYear', 'ArrivalDateWeekNumber'], how='left')
 
         # Calculate ADRThirdQuartileDeviation
         X['ADRThirdQuartileDeviation'] = X.apply(
@@ -31,6 +31,7 @@ class BookingFeaturesTransformer(BaseEstimator, TransformerMixin):
                             'ThirdQuartileADR',
                             'ArrivalDateYear',
                             'ArrivalDateMonth', 
+                            'ArrivalDateWeekNumber',
                             'ArrivalDateDayOfMonth', 
                             'ReservedRoomType'])
         
