@@ -44,7 +44,6 @@ class LogitOddsEncoder(BaseEstimator, TransformerMixin):
         return self
     
     def transform(self, X):
-        # Ensure X is a DataFrame
         X = pd.DataFrame(X, columns=self.columns)
         X_encoded = pd.DataFrame(index=X.index)
 

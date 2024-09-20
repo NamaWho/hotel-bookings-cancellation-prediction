@@ -1,7 +1,6 @@
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.compose import ColumnTransformer
 from estimators.LogitOddsEncoder import LogitOddsEncoder
-from sklearn.pipeline import Pipeline, FeatureUnion
 
 numerical_features = ['LeadTime', 
                       'StaysInWeekendNights', 
